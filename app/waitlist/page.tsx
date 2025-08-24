@@ -1,12 +1,75 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Check } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
+// Use THIS form id (from your new link)
+const FORM_ACTION =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfXDgZjvZbI7QyDhpBXi2plLWLWbXUwPeG65iBi0TAkepdbkQ/formResponse";
+
+// Field keys (Google expects the full `entry.<id>` names)
+const ENTRY_EMAIL = "entry.267124728";
+const ENTRY_USERNAME = "entry.1243908377";
+ // ← replace with your Username entry id (or remove if not needed)
 
 export default function WaitlistPage() {
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Honeypot field (hidden) to catch bots
+  const [website, setWebsite] = useState(""); // if filled, we ignore submission
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    // basic checks
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      setError("Please enter a valid email.");
+      return;
+    }
+    if (website) {
+      // bot detected, silently succeed
+      setDone(true);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Build form-encoded body for Google Forms
+      const data = new URLSearchParams();
+      data.append(ENTRY_EMAIL, email);
+      if (ENTRY_USERNAME && username) data.append(ENTRY_USERNAME, username);
+
+      // IMPORTANT: Google Forms requires no-cors
+      await fetch(FORM_ACTION, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: data.toString(),
+      });
+
+      // We can’t read the response in no-cors mode, so we optimistically show success.
+      setDone(true);
+      setEmail("");
+      setUsername("");
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">
@@ -57,41 +120,72 @@ export default function WaitlistPage() {
                   Get early access and be among the first to experience Compasslystics.
                 </CardDescription>
               </CardHeader>
+
               <CardContent className="space-y-4 sm:space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="username" className="text-sm font-medium text-foreground font-sans">
-                    Username
-                  </Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Enter your username"
-                    className="bg-input border-border focus:ring-primary focus:border-primary"
-                  />
-                </div>
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                  {/* Honeypot (hidden) */}
+                  <div className="hidden">
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      name="website"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                      autoComplete="off"
+                      tabIndex={-1}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-foreground font-sans">
-                    Email Address
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email address"
-                    className="bg-input border-border focus:ring-primary focus:border-primary"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-sm font-medium text-foreground font-sans">
+                      Username (optional)
+                    </Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Enter your username"
+                      className="bg-input border-border focus:ring-primary focus:border-primary"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                    />
+                  </div>
 
-                <Button className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground py-3 text-base sm:text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  Join Waitlist
-                </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium text-foreground font-sans">
+                      Email Address
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email address"
+                      className="bg-input border-border focus:ring-primary focus:border-primary"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
 
-                <p className="text-xs text-muted-foreground text-center font-sans">
-                  By joining, you agree to receive updates about Compasslystics. Unsubscribe anytime.
-                </p>
+                  <Button
+                    type="submit"
+                    disabled={loading || done}
+                    className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground py-3 text-base sm:text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-70"
+                  >
+                    {done ? "You're on the list 🎉" : loading ? "Joining..." : "Join Waitlist"}
+                  </Button>
+
+                  {error && (
+                    <p className="text-sm text-red-500 text-center font-sans">{error}</p>
+                  )}
+                  {!error && done && (
+                    <p className="text-xs text-muted-foreground text-center font-sans">
+                      Thanks! Check your inbox for updates soon.
+                    </p>
+                  )}
+                </form>
               </CardContent>
             </Card>
 
+            {/* Right column unchanged */}
             <div className="space-y-4 sm:space-y-6">
               <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6 font-serif">Why Join Early?</h2>
 
@@ -153,6 +247,7 @@ export default function WaitlistPage() {
                 </div>
               </div>
             </div>
+            {/* /Right column */}
           </div>
         </div>
       </section>
@@ -175,5 +270,5 @@ export default function WaitlistPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
