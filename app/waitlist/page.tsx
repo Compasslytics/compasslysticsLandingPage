@@ -9,10 +9,9 @@ import { Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-const FORM_ACTION = "https://docs.google.com/forms/d/e/REPLACE_ME/formResponse";
-const ENTRY_EMAIL = "entry.1234567890";     // ← replace with your Email entry id
+const FORM_ACTION = "https://docs.google.com/forms/d/14WnJEaYIiG-a3-lNCgJt2mP9O52vaqjp6Szvyx8_IJ8";
+const ENTRY_EMAIL = "entry.267124728";     // ← replace with your Email entry id
 const ENTRY_USERNAME = "entry.0987654321";  // ← replace with your Username entry id (or remove if not needed)
-
 export default function WaitlistPage() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
