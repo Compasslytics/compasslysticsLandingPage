@@ -115,19 +115,6 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2 font-serif">
-                    Message *
-                  </label>
-                  <Textarea
-                    id="message"
-                    required
-                    rows={5}
-                    className="w-full"
-                    placeholder="Tell us more..."
-                    name={`entry.${ENTRY_MESSAGE}`}
-                  />
-                </div>
 
                 <div>
                   <label htmlFor="company" className="block text-sm font-medium text-foreground mb-2 font-serif">
@@ -156,6 +143,20 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                   />
                 </div>
 
+
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2 font-serif">
+                    Message *
+                  </label>
+                  <Textarea
+                    id="message"
+                    required
+                    rows={5}
+                    className="w-full"
+                    placeholder="Tell us more..."
+                    name={`entry.${ENTRY_MESSAGE}`}
+                  />
+                </div>
                 <Button
                   type="submit"
                   disabled={loading}

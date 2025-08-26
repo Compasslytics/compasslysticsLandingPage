@@ -16,10 +16,15 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Compasslystics - Data Analytics for Everyone",
+  title: "Compasslystics",
   description: "Turn any data into instant insights with our AI-powered analytics platform",
-    generator: 'v0.app'
+  generator: "v0.app",
+  icons: {
+    icon: "/favicon.png", // <-- put your favicon inside /public
+    shortcut: "/favicon.png"
+  },
 }
+
 
 export default function RootLayout({
   children,
